@@ -24,7 +24,7 @@ type car struct {
 var cars = []car{
 	{ID: "1", Brand: "Honda", Type: "City"},
 	{ID: "2", Brand: "Toyota", Type: "Avanza"},
-	{ID: "3", Brand: "h", Type: "K"},
+	{ID: "3", Brand: "Lifan", Type: "SUV"},
 }
 
 func main() {
@@ -48,12 +48,13 @@ func main() {
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
 			})
+
+			return
 		}
+
 		cars = append(cars, car)
 		ctx.JSON(http.StatusCreated, car)
 	})
-
-	//UPDATE / cars/:id - update car
 
 	//DELETE / cars/:id - delete car
 	r.DELETE("/cars/:car_id", func(ctx *gin.Context) {
@@ -67,5 +68,32 @@ func main() {
 		ctx.Status(http.StatusNoContent)
 	})
 
+	//GET / cars/:id - get one car
+	r.GET("cars/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		for _, a := range cars {
+			if a.ID == id {
+				c.IndentedJSON(http.StatusOK, a)
+				return
+			}
+		}
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Not Found"})
+	})
+
+	//PUT / cars/:id - update car
+	r.PUT("/cars/:car_id", func(c *gin.Context) {
+		var newCar car
+		id := c.Param("id")
+		if id == "" {
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Insert ID"})
+		} else {
+			c.BindJSON(&newCar)
+			// return
+		}
+		cars = append(cars, newCar)
+		c.IndentedJSON(http.StatusCreated, newCar)
+	})
+
 	r.Run()
+
 }
